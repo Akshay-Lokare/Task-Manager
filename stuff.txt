@@ -1,0 +1,25 @@
+Home page: (main page)
+main screen
+users will see all his/her tasks
+clickable taks will take user to the specific task page (CRUD here)
+if no tasks, display a btn to add a task (add task page)
+
+
+Add Tasks: (tabs)
+This can be a modal or a separate screen for adding or editing a task
+Provide input fields for task title, description, due date, category, and reminder time.
+Save the task to the list and navigate back to the Home Screen
+
+
+Calendar page: (tabs)
+displays tasks in a calendar view, showing the due dates of tasks
+Display a calendar with tasks marked on their respective due dates.
+Option to tap on a day to see the tasks due on that date.
+Integrate with react-native-calendars for easy navigation.
+
+
+Settings/Preferences Screen (Optional): (stack)
+Allows users to customize app preferences, such as notification settings, theme preferences, etc.
+Features:
+Notification preferences (reminder times, etc.).
+Theme preferences (light/dark mode, etc.).
