@@ -1,17 +1,32 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  Platform, 
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  KeyboardAvoidingView
+} from 'react-native';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import Footer from '../components/footer';
 
 export default function AddTasks() {
+  
   const [taskData, setTaskData] = useState({
     name: '',
     description: '',
     category: '',
     dueDate: new Date(),
     reminderDate: new Date(),
+    status: 'pending'
   });
+
+
 
   const showDatePicker = (currentDate, field, mode = 'date') => {
     DateTimePickerAndroid.open({
@@ -67,6 +82,7 @@ export default function AddTasks() {
         category: '',
         dueDate: new Date(),
         reminderDate: new Date(),
+        status: 'pending'
       });
       console.log('🔄 Form reset complete');
 
@@ -77,62 +93,75 @@ export default function AddTasks() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Add New Task</Text>
-        
-        <TextInput 
-          placeholder='Task Name'
-          style={styles.input}
-          placeholderTextColor="#666"
-          value={taskData.name}
-          onChangeText={(text) => setTaskData(prev => ({ ...prev, name: text }))}
-        />
-        
-        <TextInput 
-          placeholder='Task Description'
-          style={[styles.input, styles.textArea]}
-          multiline={true}
-          numberOfLines={4}
-          placeholderTextColor="#666"
-          value={taskData.description}
-          onChangeText={(text) => setTaskData(prev => ({ ...prev, description: text }))}
-        />
-        
-        <TextInput 
-          placeholder='Category'
-          style={styles.input}
-          placeholderTextColor="#666"
-          value={taskData.category}
-          onChangeText={(text) => setTaskData(prev => ({ ...prev, category: text }))}
-        />
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
 
-        <TouchableOpacity 
-          style={styles.dateInput}
-          onPress={() => showDatePicker(taskData.dueDate, 'dueDate')}
+        <ScrollView 
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
         >
-          <Text style={styles.dateLabel}>Due Date</Text>
-          <Text style={styles.dateText}>
-            {taskData.dueDate.toLocaleDateString()}
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.content}>
+            <Text style={styles.title}>Add New Task</Text>
+            
+            <TextInput 
+              placeholder='Task Name'
+              style={styles.input}
+              placeholderTextColor="#666"
+              value={taskData.name}
+              onChangeText={(text) => setTaskData(prev => ({ ...prev, name: text }))}
+            />
+            
+            <TextInput 
+              placeholder='Task Description'
+              style={[styles.input, styles.textArea]}
+              multiline={true}
+              numberOfLines={4}
+              placeholderTextColor="#666"
+              value={taskData.description}
+              onChangeText={(text) => setTaskData(prev => ({ ...prev, description: text }))}
+            />
+            
+            <TextInput 
+              placeholder='Category'
+              style={styles.input}
+              placeholderTextColor="#666"
+              value={taskData.category}
+              onChangeText={(text) => setTaskData(prev => ({ ...prev, category: text }))}
+            />
 
-        <TouchableOpacity 
-          style={styles.dateInput}
-          onPress={() => showDatePicker(taskData.reminderDate, 'reminderDate')}
-        >
-          <Text style={styles.dateLabel}>Reminder Date</Text>
-          <Text style={styles.dateText}>
-            {taskData.reminderDate.toLocaleDateString()}
-          </Text>
-        </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.dateInput}
+              onPress={() => showDatePicker(taskData.dueDate, 'dueDate')}
+            >
+              <Text style={styles.dateLabel}>Due Date</Text>
+              <Text style={styles.dateText}>
+                {taskData.dueDate.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-          <Text style={styles.addButtonText}>Add Task</Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity 
+              style={styles.dateInput}
+              onPress={() => showDatePicker(taskData.reminderDate, 'reminderDate')}
+            >
+              <Text style={styles.dateLabel}>Reminder Date</Text>
+              <Text style={styles.dateText}>
+                {taskData.reminderDate.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
+              <Text style={styles.addButtonText}>Add Task</Text>
+            </TouchableOpacity>
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
       <Footer />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -141,10 +170,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   content: {
     flex: 1,
     padding: 20,
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'android' ? 40 : 20,
   },
   title: {
     fontSize: 24,

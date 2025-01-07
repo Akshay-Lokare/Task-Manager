@@ -38,9 +38,8 @@ const taskSchema = new mongoose.Schema({
 
 // Pre-save middleware to check for overdue tasks
 taskSchema.pre('save', function(next) {
-  // Update status to overdue if due date has passed and task isn't completed
   if (this.dueDate < new Date() && this.status !== 'completed') {
-    this.status = 'overdue';
+    this.status = 'pending';
   }
   this.updatedAt = new Date();
   next();

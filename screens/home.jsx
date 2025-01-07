@@ -1,31 +1,138 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  TouchableOpacity, 
+  Alert,
+  SafeAreaView,
+  RefreshControl,
+  Platform
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Footer from '../components/footer';
 
 export default function Home() {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
         return '#4CAF50';  // Green
       case 'in-progress':
-        return 'cyan';  
+        return '#2196F3';  // Blue
       case 'overdue':
         return '#f44336';  // Red
+      case 'pending':
+        return '#FFA726';  // Orange
       default:
-        return 'brown';
+        return '#757575';  // Grey for unknown status
     }
   };
 
+  // Fetch tasks from backend
+  const fetchTasks = async () => {
+    try {
+      const baseUrl = 'http://192.168.1.10:5000';  // Replace X with your IP
+      console.log('📱 Fetching tasks from:', `${baseUrl}/api/tasks`);
+      
+      const response = await fetch(`${baseUrl}/api/tasks`);
+      const data = await response.json();
+      
+      console.log('📦 Received tasks:', data.length);
+      setTasks(data);
+    } catch (error) {
+      console.error('❌ Error fetching tasks:', error);
+      Alert.alert('Error', 'Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // Manual refresh handler
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchTasks().finally(() => setRefreshing(false));
+  }, []);
+
+  const renderTask = ({ item }) => (
+    <View style={styles.taskCard}>
+      <View style={styles.taskHeader}>
+        <Text style={styles.taskName}>{item.name}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+          <Text style={styles.statusText}>{item.status}</Text>
+        </View>
+      </View>
+      
+      {item.description && (
+        <Text style={styles.taskDescription}>{item.description}</Text>
+      )}
+      
+      <View style={styles.taskFooter}>
+        <Text style={styles.taskCategory}>{item.category || 'No Category'}</Text>
+        <Text style={styles.taskDate}>
+          Due: {new Date(item.dueDate).toLocaleDateString()}
+        </Text>
+      </View>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.loadingText}>Loading tasks...</Text>
+        </View>
+        <Footer />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="auto" />
       <View style={styles.content}>
         <Text style={styles.title}>My Tasks</Text>
         
+        {tasks.length > 0 ? (
+          <FlatList
+            data={tasks}
+            renderItem={renderTask}
+            keyExtractor={item => item._id}
+            style={styles.taskList}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+          />
+        ) : (
+          <View style={styles.noTasksContainer}>
+            <Text style={styles.noTasksText}>No tasks yet</Text>
+            <TouchableOpacity 
+              style={styles.refreshButton}
+              onPress={fetchTasks}
+            >
+              <Text style={styles.refreshButtonText}>Refresh</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={() => navigation.navigate('AddTasks')}
+            >
+              <Text style={styles.addButtonText}>Add Your First Task</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
       <Footer />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -37,7 +144,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'android' ? 40 : 20,
+  },
+  listContent: {
+    paddingBottom: 20,
+    flexGrow: 1,
   },
   title: {
     fontSize: 28,
@@ -118,5 +229,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginTop: 20,
+  },
+  noTasksContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  refreshButton: {
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#6c63ff',
+  },
+  refreshButtonText: {
+    color: '#6c63ff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  addButton: {
+    backgroundColor: '#6c63ff',
+    padding: 15,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './db.js';
-import Task from './Task.js';
+import Task from './TaskSchema.js';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
