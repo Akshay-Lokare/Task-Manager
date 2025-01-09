@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Footer from '../components/footer';
+import { BASE_URL } from '../components/config';
 
 export default function Home() {
   const [tasks, setTasks] = useState([]);
@@ -38,10 +39,9 @@ export default function Home() {
   // Fetch tasks from backend
   const fetchTasks = async () => {
     try {
-      const baseUrl = 'http://192.168.1.10:5000';  // Replace X with your IP
-      console.log('📱 Fetching tasks from:', `${baseUrl}/api/tasks`);
+      console.log('📱 Fetching tasks from:', `${BASE_URL}/api/tasks`);
       
-      const response = await fetch(`${baseUrl}/api/tasks`);
+      const response = await fetch(`${BASE_URL}/api/tasks`);
       const data = await response.json();
       
       console.log('📦 Received tasks:', data.length);
@@ -112,6 +112,14 @@ export default function Home() {
             style={styles.taskList}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#6c63ff']}
+                tintColor="#6c63ff"
+              />
+            }
           />
         ) : (
           <View style={styles.noTasksContainer}>
@@ -164,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: 'purple',
     shadowOffset: {
       width: 0,
       height: 2,

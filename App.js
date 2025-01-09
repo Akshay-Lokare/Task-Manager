@@ -3,6 +3,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import Home from './screens/home';
 import AddTasks from './screens/addTasks';
@@ -25,17 +26,26 @@ export default function App() {
 
             return <Icon name={iconName} size={size} color={color} />;
           },
+          tabBarActiveTintColor: '#6c63ff',
+          tabBarInactiveTintColor: 'grey',
         })}
       >
         <Tab.Screen 
           name="Home" 
           component={Home}
-          options={{ tabBarLabel: 'Home' }}  
+          options={{ 
+            tabBarLabel: 'Home',
+            headerShown: false,
+          }}  
+          
         />
         <Tab.Screen 
           name="AddTasks" 
           component={AddTasks}
-          options={{ tabBarLabel: 'Add Tasks' }}  
+          options={{ 
+            tabBarLabel: 'Home',
+            headerShown: false,
+          }}    
         />
 
       </Tab.Navigator>

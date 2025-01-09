@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Alert } from 'react-native';
 
 const Footer = () => {
   const [taps, setTaps] = useState(1);
@@ -26,8 +26,6 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   footerText: {
     fontSize: 12,

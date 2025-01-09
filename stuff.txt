@@ -1,3 +1,5 @@
+HOW T DEBUG THE APP
+
 Home page: (main page)
 main screen
 users will see all his/her tasks
@@ -18,7 +20,7 @@ Option to tap on a day to see the tasks due on that date.
 Integrate with react-native-calendars for easy navigation.
 
 
-Settings/Preferences Screen (Optional): (stack)
+Settings/Preferences Screen (Optional): (stack) 
 Allows users to customize app preferences, such as notification settings, theme preferences, etc.
 Features:
 Notification preferences (reminder times, etc.).

@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import Footer from '../components/footer';
+import { BASE_URL } from '../components/config';
+import Toast from '../components/Toast';
 
 export default function AddTasks() {
   
@@ -26,7 +28,8 @@ export default function AddTasks() {
     status: 'pending'
   });
 
-
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   const showDatePicker = (currentDate, field, mode = 'date') => {
     DateTimePickerAndroid.open({
@@ -46,18 +49,17 @@ export default function AddTasks() {
   const handleSubmit = async () => {
     try {
       if (!taskData.name) {
-        Alert.alert('Error', 'Task name is required');
+        setToastMessage('Task name is required');
+        setToastVisible(true);
         return;
       }
 
-      // Use a direct URL to your backend
-      const baseUrl = 'http://192.168.1.10:5000';  // Your IP here
-
+      console.log(`⭐ baseUrl: ${BASE_URL}`);
       console.log('📝 Submitting new task...');
-      console.log('📍 Endpoint:', `${baseUrl}/api/tasks`);
+      console.log('📍 Endpoint:', `${BASE_URL}/api/tasks`);
       console.log('📦 Task data:', JSON.stringify(taskData, null, 2));
 
-      const response = await fetch(`${baseUrl}/api/tasks`, {
+      const response = await fetch(`${BASE_URL}/api/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,7 +77,9 @@ export default function AddTasks() {
       const data = await response.json();
       console.log('✅ Task created successfully:', JSON.stringify(data, null, 2));
 
-      Alert.alert('Success', 'Task created successfully');
+      setToastMessage('Task created successfully');
+      setToastVisible(true);
+      
       setTaskData({
         name: '',
         description: '',
@@ -88,7 +92,8 @@ export default function AddTasks() {
 
     } catch (error) {
       console.error('❌ Error details:', error);
-      Alert.alert('Error', 'Failed to create task. Please check your connection.');
+      setToastMessage('Failed to create task. Please check your connection.');
+      setToastVisible(true);
     }
   };
 
@@ -161,6 +166,11 @@ export default function AddTasks() {
         </ScrollView>
       </KeyboardAvoidingView>
       <Footer />
+      <Toast 
+        visible={toastVisible}
+        message={toastMessage}
+        onHide={() => setToastVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -230,7 +240,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   addButton: {
-    backgroundColor: '#6c63ff', // A nice purple color
+    backgroundColor: '#6c63ff', 
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
