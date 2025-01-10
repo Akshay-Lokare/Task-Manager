@@ -2,6 +2,16 @@
   "expo": {
     "name": "task_manager",
     "slug": "task_manager",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/frnds.jpg",
+          "color": "#ffffff",
+          "sounds": ["./assets/bubbles.wav"]
+        }
+      ]
+    ]
   }
 }

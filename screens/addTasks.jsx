@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { 
   StyleSheet, 
@@ -12,37 +11,131 @@ import {
   ScrollView,
   KeyboardAvoidingView
 } from 'react-native';
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import Footer from '../components/footer';
-import { BASE_URL } from '../components/config';
+
 import Toast from '../components/Toast';
+import { BASE_URL } from '../components/config';
+import Footer from '../components/footer';
+
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+
 
 export default function AddTasks() {
+  const setDefaultTime = (date) => {
+    const newDate = new Date(date);
+    newDate.setHours(17, 26, 0, 0); // Sets time to 12:05:00 AM
+    return newDate;
+  };
   
   const [taskData, setTaskData] = useState({
     name: '',
     description: '',
     category: '',
-    dueDate: new Date(),
-    reminderDate: new Date(),
+    dueDate: setDefaultTime(new Date()),
+    reminderDate: setDefaultTime(new Date()),
     status: 'pending'
   });
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [countdown, setCountdown] = useState(0);
+  const [isTestButtonDisabled, setIsTestButtonDisabled] = useState(false);
+
+  // here we are getting the permission for the push notifications
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+    
+    // Configure notification handler
+    Notifications.setNotificationHandler({
+      handleNotification: async () => {
+        // Check if user has granted permission before showing notifications
+        const { status } = await Notifications.getPermissionsAsync();
+        if (status !== 'granted') {
+          return {
+            shouldShowAlert: false,
+            shouldPlaySound: false,
+            shouldSetBadge: false,
+          };
+        }
+        
+        return {
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        };
+      },
+    });
+  }, []);
+
+  const registerForPushNotificationsAsync = async () => {
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      
+      if (finalStatus !== 'granted') {
+        setToastMessage('Failed to get push token for push notification!');
+        setToastVisible(true);
+        return;
+      }
+    }
+  };
+
+
+  //This is like setting an alarm - 
+  //it tells the phone "At this specific date and time, show this message".
+
+  const scheduleNotification = async (date, title, body) => {
+    try {
+      const trigger = new Date(date);
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: title,
+          body: body,
+        },
+        trigger,
+      });
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+    }
+  };
 
   const showDatePicker = (currentDate, field, mode = 'date') => {
+    const showTimePicker = () => {
+      DateTimePickerAndroid.open({
+        value: currentDate,
+        onChange: (event, selectedDate) => {
+          if (event.type === 'set') {
+            // If no time was previously set, use default time
+            const finalDate = selectedDate || setDefaultTime(currentDate);
+            setTaskData(prev => ({
+              ...prev,
+              [field]: finalDate
+            }));
+          }
+        },
+        mode: 'time',
+      });
+    };
+
     DateTimePickerAndroid.open({
       value: currentDate,
       onChange: (event, selectedDate) => {
         if (event.type === 'set') {
+          const finalDate = selectedDate || currentDate;
           setTaskData(prev => ({
             ...prev,
-            [field]: selectedDate
+            [field]: finalDate
           }));
+          showTimePicker();
         }
       },
-      mode: mode,
+      mode: 'date',
     });
   };
 
@@ -53,6 +146,19 @@ export default function AddTasks() {
         setToastVisible(true);
         return;
       }
+
+      // Schedule notifications for due date and reminder
+      await scheduleNotification(
+        taskData.dueDate,
+        'Task Due!',
+        `Your task "${taskData.name}" is due now!`
+      );
+
+      await scheduleNotification(
+        taskData.reminderDate,
+        'Task Reminder',
+        `Reminder: Your task "${taskData.name}" is coming up!`
+      );
 
       console.log(`⭐ baseUrl: ${BASE_URL}`);
       console.log('📝 Submitting new task...');
@@ -94,6 +200,44 @@ export default function AddTasks() {
       console.error('❌ Error details:', error);
       setToastMessage('Failed to create task. Please check your connection.');
       setToastVisible(true);
+    }
+  };
+
+
+  const testNotification = async () => {
+    try {
+      setIsTestButtonDisabled(true);
+      const COUNTDOWN_SECONDS = 3;
+      setCountdown(COUNTDOWN_SECONDS);
+
+      // Start countdown
+      const countdownInterval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            setIsTestButtonDisabled(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Schedule notification
+      const testDate = new Date(Date.now() + COUNTDOWN_SECONDS * 1000);
+      await scheduleNotification(
+        testDate,
+        'Test Notification!',
+        'This is a test notification that appears 3 seconds after clicking the button.'
+      );
+      
+      setToastMessage('Test notification scheduled');
+      setToastVisible(true);
+    } catch (error) {
+      console.error('Test notification error:', error);
+      setToastMessage('Failed to schedule test notification');
+      setToastVisible(true);
+      setIsTestButtonDisabled(false);
+      setCountdown(0);
     }
   };
 
@@ -161,6 +305,25 @@ export default function AddTasks() {
             <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
               <Text style={styles.addButtonText}>Add Task</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[
+                styles.addButton, 
+                { 
+                  marginTop: 10, 
+                  backgroundColor: isTestButtonDisabled ? '#cccccc' : '#4CAF50'
+                }
+              ]}
+              onPress={testNotification}
+              disabled={isTestButtonDisabled}
+            >
+              <Text style={styles.addButtonText}>
+                {isTestButtonDisabled 
+                  ? `Test Notification (${countdown}s)` 
+                  : 'Test Notification (3s)'}
+              </Text>
+            </TouchableOpacity>
+
           </View>
 
         </ScrollView>

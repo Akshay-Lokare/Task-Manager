@@ -216,8 +216,8 @@ const styles = StyleSheet.create({
   },
   taskCategory: {
     fontSize: 12,
-    color: '#888',
-    backgroundColor: '#f0f0f0',
+    color: '#f0f0f0',
+    backgroundColor: '#53f5e2',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
