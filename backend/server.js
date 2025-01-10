@@ -1,9 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './db.js';
-import Task from './TaskSchema.js';
 import cors from 'cors';
-import mongoose from 'mongoose';
+import taskRoutes from './tasks.js';
 
 dotenv.config();
 
@@ -20,35 +19,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Define your routes here
-app.post('/api/tasks', async (req, res) => {
-  try {
-    console.log('\n=== 📝 New Task Request ===');
-    console.log('📦 Received data:', JSON.stringify(req.body, null, 2));
-    
-    const task = new Task(req.body);
-    console.log('🔄 Task instance created');
-    
-    await task.save();
-    console.log('✅ Task saved to database:', JSON.stringify(task, null, 2));
-    
-    res.status(201).json(task);
-    console.log('📤 Response sent to client');
-    console.log('=== Request Complete ===\n');
-  } catch (error) {
-    console.error('❌ Error creating task:', error);
-    res.status(400).json({ message: error.message });
-  }
-});
-
-app.get('/api/tasks', async (req, res) => {
-  try {
-    const tasks = await Task.find({}).sort({ createdAt: -1 });
-    res.json(tasks);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+//Mount the task routes
+app.use('/api/tasks', taskRoutes);
 
 //Basic route to test server
 app.get('/', (req, res) => {

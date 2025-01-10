@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { 
   StyleSheet, 
   Text, 
@@ -21,12 +22,17 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 
 
-export default function AddTasks() {
+export default function AddTasks({ route }) {
+
+  const username = route.params;
+
   const setDefaultTime = (date) => {
     const newDate = new Date(date);
-    newDate.setHours(17, 26, 0, 0); // Sets time to 12:05:00 AM
+    newDate.setHours(22, 24, 0, 0); // Sets time to 12:05:00 AM
     return newDate;
   };
+
+  const navigation = useNavigation();
   
   const [taskData, setTaskData] = useState({
     name: '',
@@ -89,7 +95,6 @@ export default function AddTasks() {
 
   //This is like setting an alarm - 
   //it tells the phone "At this specific date and time, show this message".
-
   const scheduleNotification = async (date, title, body) => {
     try {
       const trigger = new Date(date);
@@ -355,10 +360,12 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? 40 : 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#333',
+    textAlign: 'center',
+
   },
   input: {
     backgroundColor: '#fff',

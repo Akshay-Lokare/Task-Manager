@@ -11,14 +11,20 @@ import {
   RefreshControl,
   Platform
 } from 'react-native';
+
 import { useNavigation } from '@react-navigation/native';
 import Footer from '../components/footer';
 import { BASE_URL } from '../components/config';
 
-export default function Home() {
+export default function Home({ route }) {
+  
+  const { name } = route.params;
+  console.log(`Name: ${name}`);
+
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
   const navigation = useNavigation();
 
   const getStatusColor = (status) => {
@@ -66,25 +72,35 @@ export default function Home() {
   }, []);
 
   const renderTask = ({ item }) => (
-    <View style={styles.taskCard}>
-      <View style={styles.taskHeader}>
-        <Text style={styles.taskName}>{item.name}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{item.status}</Text>
+    <TouchableOpacity
+      onPress={() => {
+        console.log(`📃 Description of the Task pressed:, 
+          Name: ${item.name}
+          Description: ${item.description}`
+        );
+        navigation.navigate('Tasks', { tasks: item });
+      }}
+    >
+      <View style={styles.taskCard}>
+        <View style={styles.taskHeader}>
+          <Text style={styles.taskName}>{item.name}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+            <Text style={styles.statusText}>{item.status}</Text>
+          </View>
+        </View>
+        
+        {item.description && (
+          <Text style={styles.taskDescription}>{item.description}</Text>
+        )}
+        
+        <View style={styles.taskFooter}>
+          <Text style={styles.taskCategory}>{item.category || 'No Category'}</Text>
+          <Text style={styles.taskDate}>
+            Due: {new Date(item.dueDate).toLocaleDateString()}
+          </Text>
         </View>
       </View>
-      
-      {item.description && (
-        <Text style={styles.taskDescription}>{item.description}</Text>
-      )}
-      
-      <View style={styles.taskFooter}>
-        <Text style={styles.taskCategory}>{item.category || 'No Category'}</Text>
-        <Text style={styles.taskDate}>
-          Due: {new Date(item.dueDate).toLocaleDateString()}
-        </Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -102,7 +118,7 @@ export default function Home() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.content}>
-        <Text style={styles.title}>My Tasks</Text>
+        <Text style={styles.title}>{name} Tasks</Text>
         
         {tasks.length > 0 ? (
           <FlatList
@@ -163,6 +179,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#333',
+    textAlign: 'center',
   },
   taskList: {
     paddingBottom: 20,
@@ -172,14 +189,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: 'purple',
+    shadowColor: 'pink',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 8,
   },
   taskHeader: {
     flexDirection: 'row',
